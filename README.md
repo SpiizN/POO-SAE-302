@@ -4,9 +4,13 @@
 
 **INFO MODULE COMPLEMENTAIRE (hors module déjà présent avec python)**
 
+Client : 
 - Kivy
+- Kivymd==1.2.0
 - Maskpass [ligne ~50 du fichier client.py](https://github.com/SpiizN/POO-SAE-302/tree/main/code/client.py)
 - Pygame
+
+Serveur : 
 - getmac
 - RPI.GPIO
 
@@ -26,7 +30,7 @@
     - [ ] Page info robot
     - [ ] Page controle robot
     - [ ] Page log/admin
-- [ ] Commencer à réfléchir sur les classes pour les contrôles du robot
+- [X] Commencer à réfléchir sur les classes pour les contrôles du robot
 - [X] Configuration du hotspot sur le robot
     - [X] Nom du hostpot : APRobot6
     - [X] @Ip : 10.3.141.1
