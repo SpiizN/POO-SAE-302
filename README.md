@@ -6,7 +6,7 @@
 
 Client : 
 - Kivy
-- Kivymd==1.2.0
+- Kivymd==1.2.0 https://kivymd.readthedocs.io/en/1.1.1/
 - Maskpass [ligne ~50 du fichier client.py](https://github.com/SpiizN/POO-SAE-302/tree/main/code/client.py)
 - Pygame
 
