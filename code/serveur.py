@@ -25,7 +25,8 @@ class Serveur:
         self.__login: str
         self.__addr_client: str
         self.__port_client: int
-        self.__connected: bool
+        self.__connected: bool = False
+        self.__authentificated: bool = False
         self.__socket_ecoute: socket
         self.__socket_echange: socket
         self.__commandes: Commandes
@@ -153,7 +154,6 @@ class Serveur:
     def main(self) -> None:
         """Méthode de la classe Serveur qui permet de lancer l'écoute sur le port ainsi que l'authentification en cas de connexion
         """
-        message_client: List[str] = []
         try:
             self.ecoute()
             while True:
@@ -164,11 +164,11 @@ class Serveur:
                         self.attente_client()
                     self.authentification()
                     cpt += 1
-                message_client = self.recevoir().split()
+                message_client: List[str] = "a a".split()
                 while message_client[0] != "QUIT":
-                    message_client = self.recevoir().split()
+                    message_client = self.recevoir().split()    
                     if message_client[0] == "MVMT":
-                        """
+                        """ 
                         Pour les commandes par ihm
 
                         while int(message_client[1]) == 1:

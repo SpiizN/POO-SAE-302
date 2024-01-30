@@ -59,6 +59,7 @@ class Client:
             msg_serveur = "a a"
             self.envoyer(f"CONN LOGIN {login} {passwd}")
             msg_serveur = self.recevoir()
+            print(msg_serveur)
             if msg_serveur.split()[1].lower() == "accepted":
                 self.__authentification_ok = True
             return msg_serveur
@@ -85,12 +86,11 @@ class Client:
         self.connexion()
         self.authentification_interactive()
         if self.__joystick.is_connected():
-            try:
-                self.__joystick.mainloop(self.__socket)
-            except KeyboardInterrupt as e:
+            self.__joystick.mainloop(self.__socket)
+            """except KeyboardInterrupt as e:
                 print(e)
             finally:
-                self.__joystick.quit()
+                self.__joystick.quit()"""
         self.quitter()
 
     def envoyer(self, msg: str) -> None:

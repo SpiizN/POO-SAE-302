@@ -9,9 +9,11 @@ class Joystick:
         self.__connected: bool
         self.__joystick_name: str
         self.__socket: socket
+        self.__liste_actions: list
 
         self.__boutons_old: int = 0
         self.__connected = False
+        self.__liste_actions = [{"temps": 0.2, "coord": [-0.0, 0.0]}]
 
         pygame.init()
         pygame.joystick.init()
@@ -49,12 +51,16 @@ class Joystick:
             pygame.event.pump() # Mise à jour des valeurs des boutons
             x_axis = -self.__joystick.get_axis(0) # Axe vertical
             y_axis = -self.__joystick.get_axis(1) # Axe horizontal
+            temps_debut = time.time()
             
             msg = f"MVMT {button_state} {round(x_axis,2)} {round(y_axis,2)}"
-            print(msg)
             self.envoyer(msg)
             button_state = int(self.__joystick.get_button(0))
             time.sleep(0.2)
+
+            temps_fin = time.time()
+            temps_diff = temps_fin - temps_debut
+            self.__liste_actions.append({"temps": temps_diff, "coord": [round(x_axis,2), round(y_axis,2)]})
     
     def envoyer(self, msg: str) -> None:
         """Méthode de la classe Joystick qui permet d'envoyer un message au serveur.
@@ -62,6 +68,7 @@ class Joystick:
         Args:
             msg (str): Message à envoyer au serveur
         """
+        print(msg)
         self.__socket.send(json.dumps({"q": f"{msg}"}).encode("utf-8"))
 
     def recevoir(self) -> str:
@@ -79,6 +86,14 @@ class Joystick:
         self.__joystick.quit()
         pygame.quit()
 
+    def retour(self) -> None:
+        self.__liste_actions.reverse()
+        for dictionnaire in self.__liste_actions:
+            self.envoyer(f"MVMT 1 {-float(dictionnaire.get("coord")[0])} {-float(dictionnaire.get("coord")[1])}")
+            
+            time.sleep(dictionnaire.get("temps"))
+        self.__liste_actions = [{"temps": 0.2, "coord": [-0.0, 0.0]}]
+
     def mainloop(self, socket: socket) -> None:
         """Méthode de la classe Joystick qui permet d'envoyer au serveur les actions effectuées avec la manette.
 
@@ -89,5 +104,9 @@ class Joystick:
         while self.__boutons_old != 1:
             self.get_buttons() 
             self.__boutons_old = int(self.__joystick.get_button(1))
+            if int(self.__joystick.get_button(2)) == 1:
+                self.retour()
+                time.sleep(0.2)
+        self.quit()
             
         self.envoyer("QUIT")
