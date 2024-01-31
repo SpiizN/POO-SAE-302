@@ -11,7 +11,14 @@ from kivymd.uix.scrollview import MDScrollView
 from kivymd.uix.toolbar import MDTopAppBar
 from kivymd.uix.navigationdrawer import *
 from kivymd.uix.list import MDList, OneLineListItem
+from kivymd.uix.datatables import MDDataTable
+from kivy.metrics import dp
 from kivy.clock import Clock
+from kivymd.app import MDApp
+from kivy.uix.floatlayout import FloatLayout
+from kivymd.uix.button import MDRaisedButton
+from kivymd.uix.textfield import MDTextField
+from kivy.uix.scrollview import ScrollView
 
 from threading import Thread
 import time
@@ -21,7 +28,7 @@ class Interface(MDApp):
         self.__client = client
     def build(self):
         self.__liste_notifications: list = []
-        Clock.schedule_interval(self.notification_queue, 1.5)
+        Clock.schedule_interval(self.notification_queue, 2.2)
         self.theme_cls.theme_style = "Dark"
         self.theme_cls.primary_palette = "BlueGray"
         self.__screen_manager = ScreenManager(transition=SlideTransition())
@@ -164,16 +171,16 @@ class Interface(MDApp):
                                 padding=("12dp", 0, 0, "36dp"),
                             ),
                             MDNavigationDrawerItem(
-                                text="Page 1",
+                                text="Accueil",
                                 text_color=(1,1,1,1),
                                 icon="",
-                                on_press=self.switch_screen
+                                on_press=lambda x: self.__client.accueil(),
                             ),
                             MDNavigationDrawerItem(
-                                text="Page 2",
+                                text="Administration",
                                 text_color=(1,1,1,1),
                                 icon="",
-                                on_press=self.switch_screen
+                                on_press=lambda x: self.__client.administration()
                             ),
                             MDNavigationDrawerDivider(),
                             MDNavigationDrawerItem(
@@ -231,17 +238,16 @@ class Interface(MDApp):
                 pos_hint={"center_x": 0.5},
                 size_hint_x=0.5,
                 md_bg_color= couleur,
+                duration=1.5
             ))
 
     def controller_state(self):
         if self.__client.get_joystick_state():
             self.theme_cls.primary_palette = "Green"
-            self.notification_info(f"Your controller {self.__client.get_joystick_name()} is detected.", "#82F069")
-            ################# Désactiver le joystick graphique
+            self.notification_info(f"Votre manette :  {self.__client.get_joystick_name()} a été détecté.", "#82F069")
         else:
             self.theme_cls.primary_palette = "Red"
-            self.notification_info(f"No controller as been detected.", "#F9C649")
-            ################# Désactiver le activer le joystick graphique
+            self.notification_info(f"Votre manette n'a pas été détecté.", "#F9C649")
     
     def notification_queue(self, dt) -> None:
         if self.__liste_notifications != []:

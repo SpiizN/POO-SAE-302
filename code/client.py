@@ -31,7 +31,7 @@ class Client:
         self.__joystick = Joystick()
         self.__interface = Interface()
         self.__interface.add_client(self)
-        self.__interface.run()        
+        self.__interface.run()
 
     def get_connexion_ok(self) -> bool:
         """Méthode de la classe Client qui permet de savoir si la connexion à été initialisée.
@@ -137,6 +137,16 @@ class Client:
         self.__authentification_ok = False
         self.__interface.controller_state_reset()
         self.__nb_tentatives = 1
+
+    def accueil(self) -> None:
+        self.__interface._Interface__screen_manager.current = "Accueil"
+
+    def administration(self) -> None:
+        if self.__login == "admin":
+            self.__interface._Interface__screen_manager.current = "Administration"
+            self.__interface.db_init()
+        else:
+            self.__interface.notification_info("Vous n'avez pas les droits pour acceder à cette ressource. Contactez votre administrateur.", "#F9C649")
 
     def get_joystick_name(self) -> str:
         return self.__joystick.get_name()
