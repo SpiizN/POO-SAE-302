@@ -11,11 +11,17 @@ from kivymd.uix.scrollview import MDScrollView
 from kivymd.uix.toolbar import MDTopAppBar
 from kivymd.uix.navigationdrawer import *
 from kivymd.uix.list import MDList, OneLineListItem
+from kivy.clock import Clock
+
+from threading import Thread
+import time
 
 class Interface(MDApp):
     def add_client(self, client):
         self.__client = client
     def build(self):
+        self.__liste_notifications: list = []
+        Clock.schedule_interval(self.notification_queue, 1.5)
         self.theme_cls.theme_style = "Dark"
         self.theme_cls.primary_palette = "BlueGray"
         self.__screen_manager = ScreenManager(transition=SlideTransition())
@@ -145,6 +151,7 @@ class Interface(MDApp):
                     elevation=4,
                     title="Robot_6",
                     left_action_items=[["menu", lambda x: self.nav_drawer("open")]],
+                    right_action_items=[["controller_state", lambda x: self.controller_state()]]
                 ),
                 MDNavigationLayout(
                     MDNavigationDrawer(
@@ -214,7 +221,7 @@ class Interface(MDApp):
                 self.__client.authentification("tmp")
 
     def notification_info(self, message: str, couleur: str) -> None:
-        MDSnackbar(
+        self.__liste_notifications.append(MDSnackbar(
                 MDLabel(
                     text=message,
                     theme_text_color="Custom",
@@ -224,8 +231,25 @@ class Interface(MDApp):
                 pos_hint={"center_x": 0.5},
                 size_hint_x=0.5,
                 md_bg_color= couleur,
-            ).open()
+            ))
 
+    def controller_state(self):
+        if self.__client.get_joystick_state():
+            self.theme_cls.primary_palette = "Green"
+            self.notification_info(f"Your controller {self.__client.get_joystick_name()} is detected.", "#82F069")
+            ################# Désactiver le joystick graphique
+        else:
+            self.theme_cls.primary_palette = "Red"
+            self.notification_info(f"No controller as been detected.", "#F9C649")
+            ################# Désactiver le activer le joystick graphique
+    
+    def notification_queue(self, dt) -> None:
+        if self.__liste_notifications != []:
+            self.__liste_notifications[0].open()
+            del self.__liste_notifications[0]
+        
+    def controller_state_reset(self):
+        self.theme_cls.primary_palette = "BlueGray"
 
     def switch_screen(self, instance_list_item: OneLineListItem):
             self.__screen_manager.current = ["Screen 1", "Screen 2"][instance_list_item.text]
