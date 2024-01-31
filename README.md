@@ -7,7 +7,6 @@
 Client : 
 - Kivy
 - Kivymd==1.2.0 https://kivymd.readthedocs.io/en/1.1.1/
-- Maskpass [ligne ~50 du fichier client.py](https://github.com/SpiizN/POO-SAE-302/tree/main/code/client.py)
 - Pygame
 
 Serveur : 
@@ -45,5 +44,6 @@ Serveur :
 - [X] Ajout du chiffrage des mdp
 - [X] Problème lors d'une deuxième authentification. Rien ne se passe coté client.
 - [X] Lors de l'utilisation de la manette au bout d'un moment le serveur crash (je suppose il recoit trop de message en même temps)
-- [ ] Lorsque les commandes par IHM sont posées, mettre au propre les fonctions de mouvement dans [commandes.py](https://github.com/SpiizN/POO-SAE-302/tree/main/code/sub/commandes.py)
-- [ ] Deuxième tentatives de connexion (en cas d'échec) n'aboutie pas
+- [X] Lorsque les commandes par IHM sont posées, mettre au propre les fonctions de mouvement dans [commandes.py](https://github.com/SpiizN/POO-SAE-302/tree/main/code/sub/commandes.py)
+- [X] Deuxième tentatives de connexion (en cas d'échec) n'aboutie pas
+- [ ] Sur l'ihm le joystick à un gros lag sur l'affichage et déplacement.

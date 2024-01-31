@@ -8,7 +8,7 @@ class Joystick:
         self.__boutons_old: dict
         self.__connected: bool
         self.__joystick_name: str
-        self.__socket: socket
+        
 
         self.__boutons_old: int = 0
         self.__connected = False
@@ -40,6 +40,14 @@ class Joystick:
         """
         return self.__joystick_name
 
+    def get_update(self, client) -> None:
+        """Méthode de la classe joystick qui permet d'avoir le client.
+
+        Args:
+            client (client): Client
+        """
+        self.__client = client
+
     def get_buttons(self) -> None:
         """Méthode de la classe Joystick qui permet de récuper les actions faites et les envoyer au serveur.
         """
@@ -49,29 +57,24 @@ class Joystick:
             pygame.event.pump() # Mise à jour des valeurs des boutons
             x_axis = -self.__joystick.get_axis(0) # Axe vertical
             y_axis = -self.__joystick.get_axis(1) # Axe horizontal
-            
-            msg = f"MVMT {button_state} {round(x_axis,2)} {round(y_axis,2)}"
-            print(msg)
-            self.envoyer(msg)
-            button_state = int(self.__joystick.get_button(0))
-            time.sleep(0.2)
+            print(self.envoyer_mvmt(x_axis, y_axis))
     
-    def envoyer(self, msg: str) -> None:
-        """Méthode de la classe Joystick qui permet d'envoyer un message au serveur.
-
+    def envoyer_mvmt(self, x: float, y: float) -> str:
+        """Méthode de la classe Joystick qui permet d'envoyer les messages de mouvements au serveur.
+        
         Args:
-            msg (str): Message à envoyer au serveur
-        """
-        self.__socket.send(json.dumps({"q": f"{msg}"}).encode("utf-8"))
+            x (float): Coord x du joystick
+            y (float): Coord y du joystick
 
-    def recevoir(self) -> str:
-        """Méthode de la classe Joystick qui permet de recevoir un message envoyé par le serveur.
-
-        Returns:
-            str: Message reçu
+        Return:
+            str: Message envoyé au serveur
         """
-        msg = self.__socket.recv(1024).decode("utf-8")
-        return json.loads(msg)["q"]
+        msg = f"MVMT 1 {round(x,2)} {round(y,2)}"
+        self.__client.envoyer(msg)
+        time.sleep(0.1)
+        return msg
+
+
 
     def quit(self) -> None:
         """Méthode de la classe Joystick pour arréter l'échange.

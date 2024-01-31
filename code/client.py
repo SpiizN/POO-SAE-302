@@ -30,7 +30,7 @@ class Client:
         self.__nb_tentatives = 1
         self.__joystick = Joystick()
         self.__interface = Interface()
-        self.__interface.add_client(self)
+        self.__interface.add_client(self, self.__joystick)
         self.__interface.run()
 
     def get_connexion_ok(self) -> bool:
@@ -75,6 +75,7 @@ class Client:
         try:
             self.__socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # Création de la socket
             self.__socket.connect((self.__ip_serveur, self.__port_serveur)) # Connection au service distant
+            self.__joystick.get_update(self)
             # Filtrage MAC
             msg_serveur = self.recevoir()
             if msg_serveur.split()[1].lower() == "accepted": # Mac
@@ -114,7 +115,7 @@ class Client:
                     self.__interface.notification_info("Trop de tentatives", "#F9C649") # Ne veut pas s'afficher
                     card.connexion_login.error = True
                     card.connexion_password.error = True
-                    time.sleep(3)
+                    time.sleep(2)
                     self.quitter()
 
     def quitter(self) -> None:
@@ -139,7 +140,6 @@ class Client:
     def main(self) -> None:
         """Méthode de la classe Client qui permet de lancer l'authentification et l'envoie des contrôles.
         """
-
         if self.__joystick.is_connected():
             try:
                 self.__joystick.mainloop(self.__socket)
@@ -175,4 +175,4 @@ if __name__=="__main__":
 
     client: Client
     client = Client(ip_serveur=ip_serveur, port_serveur=port_serveur)
-    client.main()
+    #client.main()

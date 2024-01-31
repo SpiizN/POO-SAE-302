@@ -133,25 +133,7 @@ class Serveur:
             status_mac = f"CONN REFUSED MAC"
             self.__log.write("connexion.log", f"[{datetime.now()}] - {self.__addr_client} has tried to connect but his address is invalid.")
             self.envoyer(status_mac)
-    
-    """Pour les commandes par ihm
-    def mouvement(self, angle: float) -> None:
-        Méthode de la classe Serveur qui effectue le mouvement du robot en fonction de la commande reçu.
 
-        Args:
-            angle (float): Angle du joystick
-        
-        if angle > 180:
-            angle -= 360
-        if (angle < 45 and angle > -45): # Avancer
-            self.__commandes.mouvement("avancer", 1, 80)
-        elif (angle < -45 and angle > -135): # Gauche
-            self.__commandes.tourner(angle, 80)
-        elif (angle < -135 or angle > 135): # Reculer
-            self.__commandes.mouvement("reculer", 1, 80)
-        elif (angle < 135 and angle > 45): # Droite
-            self.__commandes.tourner(angle, 80)
-   """
     def drop_client(self) -> None:
         self.__socket_echange = None
         self.__connected = False
@@ -165,7 +147,6 @@ class Serveur:
         try:
             self.ecoute()
             while True:
-                print('start')
                 cpt: int = 0
                 self.attente_client()
                 while not self.get_authentificated() and cpt < 3:
@@ -174,6 +155,7 @@ class Serveur:
                     self.authentification()
                     cpt += 1
                 message_client = self.recevoir().split()
+                print(message_client)
                 while message_client[0] != "QUIT":
                     message_client = self.recevoir().split()
                     if message_client[0] == "MVMT":
@@ -186,7 +168,6 @@ class Serveur:
                         """
                         self.__commandes.control_joystick(float(message_client[2]), float(message_client[3]))
                 self.drop_client()
-                print('drop')
                 
         except KeyboardInterrupt as err:
             print(err)

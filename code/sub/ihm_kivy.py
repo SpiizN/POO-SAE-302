@@ -1,20 +1,23 @@
-from kivymd.uix.textfield import MDTextField
-from kivymd.uix.card import MDCard
-from kivymd.uix.screen import MDScreen
-from kivymd.uix.label import MDLabel
-from kivymd.uix.button import MDRoundFlatButton
-from kivymd.uix.snackbar import MDSnackbar
-from kivymd.app import MDApp
+from kivymd.uix.button import MDRoundFlatButton, MDFloatingActionButton
 from kivy.uix.screenmanager import ScreenManager, SlideTransition
-from kivymd.uix.screenmanager import MDScreenManager
+from kivymd.uix.list import MDList, OneLineListItem
 from kivymd.uix.scrollview import MDScrollView
+from kivymd.uix.textfield import MDTextField
+from kivymd.uix.boxlayout import MDBoxLayout
+from kivymd.uix.snackbar import MDSnackbar
 from kivymd.uix.toolbar import MDTopAppBar
 from kivymd.uix.navigationdrawer import *
-from kivymd.uix.list import MDList, OneLineListItem
+from kivymd.uix.screen import MDScreen
+from kivymd.uix.label import MDLabel
+from kivymd.uix.card import MDCard
+from kivymd.app import MDApp
+from collections import deque
+from kivy.clock import Clock
 
 class Interface(MDApp):
-    def add_client(self, client):
+    def add_client(self, client, joystick):
         self.__client = client
+        self.__joystick = joystick
     def build(self):
         self.theme_cls.theme_style = "Dark"
         self.theme_cls.primary_palette = "BlueGray"
@@ -138,6 +141,28 @@ class Interface(MDApp):
             ))
         self.__screen_manager.add_widget(
             MDScreen(
+                MDBoxLayout(
+                MDLabel(id="joystick_label",text='Joystick value: 0, 0', color=(0, 0, 0, 1)),
+                MDBoxLayout(
+                    MDFloatingActionButton(
+                        id="joystick_button",
+                        icon="camera-control",
+                        size_hint=(None, None),
+                        size=('50dp', '50dp'),
+                        pos_hint={'center_x': 0.5, 'center_y': 0.5},
+                        on_touch_move=self.on_joystick_move,
+                        on_touch_up=self.on_joystick_release
+                    ),
+                    id="joystick_box",
+                    orientation='vertical',
+                    size_hint=(None, None),
+                    size=('150dp', '150dp'),
+                    pos_hint={'center_x': 0.5, 'center_y': 0.5},
+                    padding=10
+                ),
+                id="joystick_conainer",
+                orientation='vertical',
+            ),
                 # Page d'accueil
                 MDTopAppBar(
                     id="menu_top_bar",
@@ -157,15 +182,15 @@ class Interface(MDApp):
                                 padding=("12dp", 0, 0, "36dp"),
                             ),
                             MDNavigationDrawerItem(
-                                text="Page 1",
+                                text="Accueil",
                                 text_color=(1,1,1,1),
-                                icon="",
+                                icon="camera-control",
                                 on_press=self.switch_screen
                             ),
                             MDNavigationDrawerItem(
-                                text="Page 2",
+                                text="Log",
                                 text_color=(1,1,1,1),
-                                icon="",
+                                icon="math-log",
                                 on_press=self.switch_screen
                             ),
                             MDNavigationDrawerDivider(),
@@ -198,6 +223,7 @@ class Interface(MDApp):
         return self.__screen_manager
 
     def quitter(self):
+        self.on_stop()
         self.stop()
 
     def valider(self,tmp):
@@ -226,11 +252,43 @@ class Interface(MDApp):
                 md_bg_color= couleur,
             ).open()
 
-
     def switch_screen(self, instance_list_item: OneLineListItem):
-            self.__screen_manager.current = ["Screen 1", "Screen 2"][instance_list_item.text]
+            self.__screen_manager.current = instance_list_item.text
             self.nav_drawer("close")
 
     def nav_drawer(self, action: str):
         self.__screen_manager.get_screen(self.__screen_manager.current).ids.navigation_layout.ids.nav_drawer.ids.nav_drawer_menu.ids.nav_drawer_header.text = f"Connecté en tant que {self.__client.get_login()}"
         self.__screen_manager.get_screen(self.__screen_manager.current).ids.navigation_layout.ids.nav_drawer.set_state(action)
+
+    def on_joystick_move(self, instance, touch):
+        container = self.__screen_manager.get_screen("Accueil").ids.joystick_conainer.ids
+        joystick_box = container.joystick_box
+        joystick_button = joystick_box.ids.joystick_button
+        joystick_label = container.joystick_label
+        if joystick_button.collide_point(*touch.pos):
+            # Calcul des déplacements relatifs par rapport au centre du joystick
+            dx = touch.pos[0] - joystick_box.center_x
+            dy = touch.pos[1] - joystick_box.center_y
+
+            # Normalisation des valeurs dans la plage de -1 à 1
+            x = max(-1, min(1, dx / (joystick_box.width / 2)))
+            y = max(-1, min(1, dy / (joystick_box.height / 2)))
+
+            # Mise à jour de la position du bouton
+            joystick_button.center_x = joystick_box.center_x + x * (joystick_box.width / 2)
+            joystick_button.center_y = joystick_box.center_y + y * (joystick_box.height / 2)
+
+            x = (joystick_button.center_x - joystick_box.x - joystick_box.width / 2) / (joystick_box.width / 2)
+            y = (joystick_button.center_y - joystick_box.y - joystick_box.height / 2) / (joystick_box.height / 2)
+            joystick_label.text = f'Joystick value: {-x:.2f}, {y:.2f}'
+            self.__joystick.envoyer_mvmt(x, y)
+
+    def on_joystick_release(self, instance, button):
+        container = self.__screen_manager.get_screen("Accueil").ids.joystick_conainer.ids
+        joystick_box = container.joystick_box
+        joystick_button = joystick_box.ids.joystick_button
+        joystick_label = container.joystick_label
+        joystick_button.x = joystick_box.center_x - 25
+        joystick_button.y = joystick_box.center_y - 25
+        joystick_label.text = 'Joystick value: 0, 0'
+        self.__joystick.envoyer_mvmt(0, 0)
