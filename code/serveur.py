@@ -5,7 +5,7 @@ from sub.security import MacFilter
 from sub.loging import Log
 from sub.requests import Requests
 from sub.exception import *
-from sub.commandes import Commandes
+#from sub.commandes import Commandes
 from datetime import datetime
 from threading import Thread
 
@@ -28,14 +28,19 @@ class Serveur:
         self.__connected: bool
         self.__socket_ecoute: socket
         self.__socket_echange: socket
-        self.__commandes: Commandes
+        self.__connected = False
+        self.__authentificated = False
+        #self.__commandes: Commandes
         # Initialisation
         Thread.__init__(self)
+        self.__socket_echange = None
+        self.__connected = False
+        self.__authentificated = False
         self.__port_serveur = port_serveur
         self.__log = Log()
         self.__mac_filter = MacFilter()
         self.__bdd_connexion = Requests("bdd/connexion.sqlite3")
-        self.__commandes = Commandes()
+        #self.__commandes = Commandes()
     
     # -- OBSERVATEUR
     def get_connected(self) -> bool:
@@ -108,16 +113,19 @@ class Serveur:
             self.envoyer(status_mac) # Envoie du message de confirmation
 
             self.envoyer(f"CONN WAITING USER") # Envoie la demande d'authentification
-            self.__login = self.recevoir().split()[2:] # Récupère le login et password envoyés par le client
+            msg_client: str = self.recevoir().split()
+            self.__login = msg_client[2:] # Récupère le login et password envoyés par le client
 
             self.__bdd_connexion.open() # Ouverture de la base de données
             liste_login = self.__bdd_connexion.reponse_multiple('SELECT login, password FROM login ;') # Requête si les identifiants correspondent
             self.__bdd_connexion.close() # Fermeture de la base de données
-
             if tuple(self.__login) in liste_login: # Si les identifiants sont bien dans la base de données alors on accepte l'authentification
                 self.envoyer(f"CONN ACCEPTED LOGIN")
                 self.__log.write("connexion.log", f"[{datetime.now()}] - {self.__addr_client} has log in with {self.__login} account.")
                 self.__authentificated = True
+            elif msg_client[0] == "QUIT":
+                self.drop_client()
+                msg_client = "a a"
             else: # Sinon on refuse l'authentification
                 self.envoyer(f"CONN REFUSED LOGIN")
                 self.__log.write("connexion.log", f"[{datetime.now()}] - {self.__addr_client} has failed to log in with {self.__login} account.")
@@ -153,10 +161,11 @@ class Serveur:
     def main(self) -> None:
         """Méthode de la classe Serveur qui permet de lancer l'écoute sur le port ainsi que l'authentification en cas de connexion
         """
-        message_client: List[str] = []
+        message_client: List[str] = ["a a"]
         try:
             self.ecoute()
             while True:
+                print('start')
                 cpt: int = 0
                 self.attente_client()
                 while not self.get_authentificated() and cpt < 3:
@@ -177,6 +186,7 @@ class Serveur:
                         """
                         self.__commandes.control_joystick(float(message_client[2]), float(message_client[3]))
                 self.drop_client()
+                print('drop')
                 
         except KeyboardInterrupt as err:
             print(err)
