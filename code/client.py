@@ -106,6 +106,7 @@ class Client:
                     self.__authentification_ok = True
                     self.__interface.notification_info("Authentification Réussite", "#82F069")
                     self.__interface._Interface__screen_manager.current = "Accueil"
+                    self.__interface.controller_state()
                 elif msg_serveur.split()[1] == "REFUSED":
                     msg_serveur = self.recevoir()
                     self.__interface.notification_info("Identifiants invalides", "#F9C649")
@@ -135,7 +136,14 @@ class Client:
         self.__interface._Interface__screen_manager.current = "Connexion"
         self.__connexion_ok = False
         self.__authentification_ok = False
+        self.__interface.controller_state_reset()
         self.__nb_tentatives = 1
+
+    def get_joystick_name(self) -> str:
+        return self.__joystick.get_name()
+
+    def get_joystick_state(self) -> str:
+        return self.__joystick.is_connected()
 
     def main(self) -> None:
         """Méthode de la classe Client qui permet de lancer l'authentification et l'envoie des contrôles.

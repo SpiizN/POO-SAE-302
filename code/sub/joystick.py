@@ -24,12 +24,27 @@ class Joystick:
             self.__joystick_name = self.__joystick.get_name()
             self.__connected = True
 
+    def retry(self) -> None:
+        """Méthode qui retente de connecter une manette / tester si la manette a été déconnectée
+        """
+        pygame.init()
+        pygame.joystick.init()
+        joystick_count = pygame.joystick.get_count()
+        if joystick_count == 0:
+            self.__connected = False
+        else:
+            self.__joystick = pygame.joystick.Joystick(0)
+            self.__joystick.init()
+            self.__joystick_name = self.__joystick.get_name()
+            self.__connected = True
+
     def is_connected(self) -> bool:
         """Méthode de la classe Joystick qui permet de savoir si une manette est connectée.
 
         Returns:
             bool: Booléen, True si une manette est connectée
         """
+        self.retry()
         return self.__connected
 
     def get_name(self) -> str:
