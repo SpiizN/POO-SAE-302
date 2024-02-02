@@ -65,7 +65,7 @@ class Client:
         """
         return self.__login
 
-    def connexion(self, instance) -> None:
+    def connexion(self) -> None:
         """Méthode de la classe Client qui initialise le socket
         """
         card = self.__interface._Interface__screen_manager.get_screen(self.__interface._Interface__screen_manager.current).ids.connexion_serveur_card.ids
@@ -87,7 +87,7 @@ class Client:
         except Exception as ex:
             self.__interface.notification_info("Serveur non joignable", "#F9C649")
 
-    def authentification(self, instance) -> str:
+    def authentification(self,tmp) -> str:
         """Méthode de la classe Client qui permet à l'utilisateur de s'authentifier.
         """
         card = self.__interface._Interface__screen_manager.get_screen(self.__interface._Interface__screen_manager.current).ids.connexion_card.ids
@@ -100,15 +100,14 @@ class Client:
                 self.envoyer(f"CONN LOGIN {self.__login} {passwd}")
                 msg_serveur = self.recevoir()
                 self.__nb_tentatives += 1
-                card.connexion_login.text =""
-                card.connexion_password.text = ""
                 if msg_serveur.split()[1] == "ACCEPTED":
                     self.__authentification_ok = True
                     self.__interface.notification_info("Authentification Réussite", "#82F069")
                     self.__interface._Interface__screen_manager.current = "Accueil"
-                    self.__interface.controller_state()
                 elif msg_serveur.split()[1] == "REFUSED":
+                    print(msg_serveur)
                     msg_serveur = self.recevoir()
+                    print("3",msg_serveur)
                     self.__interface.notification_info("Identifiants invalides", "#F9C649")
                     card.connexion_login.error = True
                     card.connexion_password.error = True
@@ -140,21 +139,31 @@ class Client:
         self.__nb_tentatives = 1
 
     def get_joystick_name(self) -> str:
+        """Méthode de la classe Client qui permet de savoir le nom de la manette connectée.
+
+        Returns:
+            str: Nom de la manette
+        """
         return self.__joystick.get_name()
 
-    def get_joystick_state(self) -> str:
+    def get_joystick_state(self) -> bool:
+        """Méthode de la classe Client qui permet de savoir si une manette est connectée.
+
+        Returns:
+            bool: True si une manette est reconnu False sinon
+        """
         return self.__joystick.is_connected()
 
-    def main(self) -> None:
+    def control_manette(self) -> None:
         """Méthode de la classe Client qui permet de lancer l'authentification et l'envoie des contrôles.
         """
-        if self.__joystick.is_connected():
-            try:
-                self.__joystick.mainloop(self.__socket)
-            except KeyboardInterrupt as e:
-                print(e)
-            finally:
-                self.__joystick.quit()
+        if self.get_joystick_state(): # Si une manette est connectée alors on lance la recherche de boutons
+            self.__joystick.mainloop()
+            
+    def control_retour(self) -> None:
+        """Méthode de la classe Client qui permet de lancer la fonction retour
+        """
+        self.__joystick.retour()
 
     def envoyer(self, msg: str) -> None:
         """Méthode de la classe Client qui permet d'envoyer un message au serveur.
@@ -170,7 +179,11 @@ class Client:
         Returns:
             str: Message reçu
         """
-        msg = self.__socket.recv(1024).decode("utf-8")
+        try:
+            msg = self.__socket.recv(1024).decode("utf-8")
+            print(msg)
+        except:
+            msg = "a a"
         return json.loads(msg)["q"]
 
 if __name__=="__main__":
@@ -183,4 +196,3 @@ if __name__=="__main__":
 
     client: Client
     client = Client(ip_serveur=ip_serveur, port_serveur=port_serveur)
-    #client.main()

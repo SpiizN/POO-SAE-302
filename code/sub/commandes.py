@@ -3,7 +3,6 @@ import RPi.GPIO as GPIO
 import time
 
 class Commandes:
-    
     def __init__(self) -> None:
         """Constructeur de la classe Commandes
         """

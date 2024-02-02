@@ -1,11 +1,11 @@
 # -*- coding : utf8 -*-
-import socket, json
+import socket, json, time
 from typing import *
 from sub.security import MacFilter
 from sub.loging import Log
 from sub.requests import Requests
 from sub.exception import *
-#from sub.commandes import Commandes
+from sub.commandes import Commandes
 from datetime import datetime
 from threading import Thread
 
@@ -30,7 +30,7 @@ class Serveur:
         self.__socket_echange: socket
         self.__connected = False
         self.__authentificated = False
-        #self.__commandes: Commandes
+        self.__commandes: Commandes
         # Initialisation
         Thread.__init__(self)
         self.__socket_echange = None
@@ -40,7 +40,7 @@ class Serveur:
         self.__log = Log()
         self.__mac_filter = MacFilter()
         self.__bdd_connexion = Requests("bdd/connexion.sqlite3")
-        #self.__commandes = Commandes()
+        self.__commandes = Commandes()
     
     # -- OBSERVATEUR
     def get_connected(self) -> bool:
@@ -111,9 +111,9 @@ class Serveur:
         if self.__addr_client == "127.0.0.1" or self.__mac_filter.filter(self.__addr_client): # Si l'adresse est autorisé alors on envoie un message de confirmation
             status_mac = f"CONN ACCEPTED MAC"
             self.envoyer(status_mac) # Envoie du message de confirmation
-
             self.envoyer(f"CONN WAITING USER") # Envoie la demande d'authentification
             msg_client: str = self.recevoir().split()
+            print(msg_client)
             self.__login = msg_client[2:] # Récupère le login et password envoyés par le client
 
             self.__bdd_connexion.open() # Ouverture de la base de données
@@ -133,6 +133,7 @@ class Serveur:
             status_mac = f"CONN REFUSED MAC"
             self.__log.write("connexion.log", f"[{datetime.now()}] - {self.__addr_client} has tried to connect but his address is invalid.")
             self.envoyer(status_mac)
+            self.drop_client()
 
     def drop_client(self) -> None:
         self.__socket_echange = None
@@ -159,13 +160,6 @@ class Serveur:
                 while message_client[0] != "QUIT":
                     message_client = self.recevoir().split()
                     if message_client[0] == "MVMT":
-                        """
-                        Pour les commandes par ihm
-
-                        while int(message_client[1]) == 1:
-                            self.mouvement(float(message_client[2]))
-                            message_client = self.recevoir().split()
-                        """
                         self.__commandes.control_joystick(float(message_client[2]), float(message_client[3]))
                 self.drop_client()
                 
