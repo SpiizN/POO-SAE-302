@@ -22,7 +22,7 @@ class Interface(MDApp):
             Les pages de l'interface pour le builder KivyMD 
         """
         self.__liste_notifications: list = []
-        Clock.schedule_interval(self.notification_queue, 1.5) # Initialisation du système de gestion des notifiactions
+        Clock.schedule_interval(self.notification_queue, 2.2) # Initialisation du système de gestion des notifiactions
         self.theme_cls.theme_style = "Dark"
         self.theme_cls.primary_palette = "BlueGray"
         self.__screen_manager = ScreenManager(transition=SlideTransition()) # Initialisation du système de gestion des pages
@@ -187,6 +187,7 @@ class Interface(MDApp):
                                 padding=("12dp", 0, 0, "36dp"),
                             ),
                             MDNavigationDrawerItem(
+                                text="Accueil",
                                 text="Accueil",
                                 text_color=(1,1,1,1),
                                 icon="camera-control",

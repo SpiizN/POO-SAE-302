@@ -138,6 +138,16 @@ class Client:
         self.__interface.controller_state_reset()
         self.__nb_tentatives = 1
 
+    def accueil(self) -> None:
+        self.__interface._Interface__screen_manager.current = "Accueil"
+
+    def administration(self) -> None:
+        if self.__login == "admin":
+            self.__interface._Interface__screen_manager.current = "Administration"
+            self.__interface.db_init()
+        else:
+            self.__interface.notification_info("Vous n'avez pas les droits pour acceder à cette ressource. Contactez votre administrateur.", "#F9C649")
+
     def get_joystick_name(self) -> str:
         """Méthode de la classe Client qui permet de savoir le nom de la manette connectée.
 
